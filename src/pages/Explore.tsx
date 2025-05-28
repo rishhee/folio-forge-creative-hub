@@ -1,62 +1,35 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { mockAPI, Project } from '../services/api';
+import ProjectCard from '../components/ProjectCard';
 
 const Explore = () => {
-  const featuredProjects = [
-    {
-      id: 1,
-      title: "Mobile App Design",
-      author: "Sarah Chen",
-      image: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=400",
-      likes: 234,
-      views: 1250
-    },
-    {
-      id: 2,
-      title: "Brand Identity Design",
-      author: "Marcus Johnson",
-      image: "https://images.unsplash.com/photo-1558655146-d09347e92766?w=400",
-      likes: 189,
-      views: 980
-    },
-    {
-      id: 3,
-      title: "Website Redesign",
-      author: "Emily Rodriguez",
-      image: "https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?w=400",
-      likes: 312,
-      views: 1850
-    },
-    {
-      id: 4,
-      title: "Packaging Design",
-      author: "David Kim",
-      image: "https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=400",
-      likes: 156,
-      views: 720
-    },
-    {
-      id: 5,
-      title: "Logo Collection",
-      author: "Anna Thompson",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
-      likes: 278,
-      views: 1340
-    },
-    {
-      id: 6,
-      title: "Digital Illustration",
-      author: "James Wilson",
-      image: "https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=400",
-      likes: 201,
-      views: 890
-    }
-  ];
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState('All');
 
   const categories = [
     "All", "UI/UX", "Branding", "Illustration", "Photography", "Web Design", "Print", "3D"
   ];
+
+  useEffect(() => {
+    loadProjects();
+  }, [selectedCategory]);
+
+  const loadProjects = async () => {
+    setLoading(true);
+    try {
+      const data = await mockAPI.getProjects({ 
+        category: selectedCategory === 'All' ? undefined : selectedCategory 
+      });
+      setProjects(data);
+    } catch (error) {
+      console.error('Failed to load projects:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
@@ -69,7 +42,7 @@ const Explore = () => {
             Creative Work
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Explore millions of portfolios from talented designers, artists, and creative professionals worldwide.
+            Explore portfolios from talented designers, artists, and creative professionals worldwide.
           </p>
           <Link 
             to="/create" 
@@ -84,11 +57,12 @@ const Explore = () => {
       <section className="px-4 sm:px-6 lg:px-8 mb-12">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-wrap justify-center gap-4">
-            {categories.map((category, index) => (
+            {categories.map((category) => (
               <button
                 key={category}
+                onClick={() => setSelectedCategory(category)}
                 className={`px-6 py-2 rounded-full font-medium transition-all ${
-                  index === 0 
+                  selectedCategory === category 
                     ? 'bg-purple-600 text-white shadow-lg' 
                     : 'bg-white text-gray-700 hover:bg-purple-50 hover:text-purple-600 border border-gray-200'
                 }`}
@@ -100,48 +74,44 @@ const Explore = () => {
         </div>
       </section>
 
-      {/* Featured Projects Grid */}
+      {/* Projects Grid */}
       <section className="px-4 sm:px-6 lg:px-8 pb-20">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Featured Projects</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredProjects.map((project) => (
-              <Link 
-                key={project.id} 
-                to={`/projects/${project.id}`}
-                className="group bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2"
-              >
-                <div className="aspect-w-16 aspect-h-12 overflow-hidden">
-                  <img 
-                    src={project.image} 
-                    alt={project.title}
-                    className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-300"
-                  />
-                </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-purple-600 transition-colors">
-                    {project.title}
-                  </h3>
-                  <p className="text-gray-600 mb-4">by {project.author}</p>
-                  <div className="flex items-center justify-between text-sm text-gray-500">
-                    <span className="flex items-center">
-                      <svg className="w-4 h-4 mr-1 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
-                      </svg>
-                      {project.likes}
-                    </span>
-                    <span className="flex items-center">
-                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
-                      {project.views}
-                    </span>
+          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+            {selectedCategory === 'All' ? 'Featured Projects' : `${selectedCategory} Projects`}
+          </h2>
+          
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="bg-white rounded-xl shadow-lg animate-pulse">
+                  <div className="h-64 bg-gray-200 rounded-t-xl"></div>
+                  <div className="p-6">
+                    <div className="h-6 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded mb-4 w-2/3"></div>
+                    <div className="flex justify-between">
+                      <div className="h-4 bg-gray-200 rounded w-16"></div>
+                      <div className="h-4 bg-gray-200 rounded w-16"></div>
+                    </div>
                   </div>
                 </div>
-              </Link>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : projects.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {projects.map((project) => (
+                <ProjectCard key={project.id} project={project} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <div className="w-20 h-20 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center">
+                <span className="text-gray-500 text-2xl">🎨</span>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-700 mb-2">No projects found</h3>
+              <p className="text-gray-500">Try selecting a different category or check back later.</p>
+            </div>
+          )}
         </div>
       </section>
 
