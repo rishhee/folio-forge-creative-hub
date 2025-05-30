@@ -12,6 +12,16 @@ import Settings from './pages/Settings';
 import SearchResults from './pages/SearchResults';
 import Auth from './pages/Auth';
 import NotFound from './pages/NotFound';
+// Company pages
+import About from './pages/About';
+import Careers from './pages/Careers';
+import Press from './pages/Press';
+import Blog from './pages/Blog';
+// Support pages
+import Help from './pages/Help';
+import Contact from './pages/Contact';
+import Terms from './pages/Terms';
+import Privacy from './pages/Privacy';
 
 const AppRoutes = () => {
   return (
@@ -26,6 +36,19 @@ const AppRoutes = () => {
       <Route path="/settings" element={<Settings />} />
       <Route path="/search" element={<SearchResults />} />
       <Route path="/auth" element={<Auth />} />
+      
+      {/* Company Pages */}
+      <Route path="/about" element={<About />} />
+      <Route path="/careers" element={<Careers />} />
+      <Route path="/press" element={<Press />} />
+      <Route path="/blog" element={<Blog />} />
+      
+      {/* Support Pages */}
+      <Route path="/help" element={<Help />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/terms" element={<Terms />} />
+      <Route path="/privacy" element={<Privacy />} />
+      
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

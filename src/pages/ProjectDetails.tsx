@@ -1,9 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Heart, Eye, MessageCircle, Share2, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { mockAPI, Project } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import InteractionBar from '../components/InteractionBar';
+import CommentSection from '../components/CommentSection';
+import { useInteractions } from '../hooks/useInteractions';
 
 const ProjectDetails = () => {
   const { id } = useParams();
@@ -11,14 +14,26 @@ const ProjectDetails = () => {
   const { user } = useAuth();
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
-  const [liked, setLiked] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [showComments, setShowComments] = useState(false);
+  const { incrementView } = useInteractions(id || '');
 
   useEffect(() => {
     if (id) {
       loadProject(id);
     }
   }, [id]);
+
+  useEffect(() => {
+    if (project) {
+      // Record view when project is loaded
+      const timer = setTimeout(() => {
+        incrementView();
+      }, 2000); // Record view after 2 seconds
+
+      return () => clearTimeout(timer);
+    }
+  }, [project]);
 
   const loadProject = async (projectId: string) => {
     setLoading(true);
@@ -29,28 +44,6 @@ const ProjectDetails = () => {
       console.error('Failed to load project:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleLike = () => {
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
-    setLiked(!liked);
-    // In real app, this would update the backend
-  };
-
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: project?.title,
-        text: project?.description,
-        url: window.location.href,
-      });
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-      // Show toast notification
     }
   };
 
@@ -98,144 +91,127 @@ const ProjectDetails = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Back Button */}
-        <button 
-          onClick={() => navigate(-1)}
-          className="flex items-center text-gray-600 hover:text-purple-600 mb-6 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
-        </button>
+    <>
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Back Button */}
+          <button 
+            onClick={() => navigate(-1)}
+            className="flex items-center text-gray-600 hover:text-purple-600 mb-6 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </button>
 
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          {/* Image Gallery */}
-          <div className="relative">
-            <img 
-              src={project.images[currentImageIndex]} 
-              alt={project.title}
-              className="w-full h-96 object-cover"
-            />
-            {project.images.length > 1 && (
-              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-                {project.images.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentImageIndex(index)}
-                    className={`w-3 h-3 rounded-full transition-all ${
-                      index === currentImageIndex ? 'bg-white' : 'bg-white/50'
-                    }`}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="p-8">
-            {/* Project Header */}
-            <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-6">
-              <div className="flex-1">
-                <h1 className="text-3xl font-bold text-gray-900 mb-4">{project.title}</h1>
-                
-                {/* Author Info */}
-                <div className="flex items-center mb-4">
-                  {project.authorAvatar && (
-                    <img 
-                      src={project.authorAvatar} 
-                      alt={project.author}
-                      className="w-12 h-12 rounded-full mr-3"
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+            {/* Image Gallery */}
+            <div className="relative">
+              <img 
+                src={project.images[currentImageIndex]} 
+                alt={project.title}
+                className="w-full h-96 object-cover"
+              />
+              {project.images.length > 1 && (
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+                  {project.images.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentImageIndex(index)}
+                      className={`w-3 h-3 rounded-full transition-all ${
+                        index === currentImageIndex ? 'bg-white' : 'bg-white/50'
+                      }`}
                     />
-                  )}
-                  <div>
-                    <Link 
-                      to={`/users/${project.authorId}`}
-                      className="text-lg font-semibold text-gray-900 hover:text-purple-600 transition-colors"
-                    >
-                      {project.author}
-                    </Link>
-                    <p className="text-gray-600">Designer</p>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="p-8">
+              {/* Project Header */}
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-6">
+                <div className="flex-1">
+                  <h1 className="text-3xl font-bold text-gray-900 mb-4">{project.title}</h1>
+                  
+                  {/* Author Info */}
+                  <div className="flex items-center mb-4">
+                    {project.authorAvatar && (
+                      <img 
+                        src={project.authorAvatar} 
+                        alt={project.author}
+                        className="w-12 h-12 rounded-full mr-3"
+                      />
+                    )}
+                    <div>
+                      <Link 
+                        to={`/users/${project.authorId}`}
+                        className="text-lg font-semibold text-gray-900 hover:text-purple-600 transition-colors"
+                      >
+                        {project.author}
+                      </Link>
+                      <p className="text-gray-600">Designer</p>
+                    </div>
+                  </div>
+
+                  {/* Categories and Tags */}
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    <span className="px-3 py-1 bg-purple-100 text-purple-600 text-sm font-medium rounded-full">
+                      {project.category}
+                    </span>
+                    {project.tags.map((tag) => (
+                      <span key={tag} className="px-3 py-1 bg-gray-100 text-gray-600 text-sm rounded-full">
+                        #{tag}
+                      </span>
+                    ))}
                   </div>
                 </div>
 
-                {/* Categories and Tags */}
-                <div className="flex flex-wrap gap-2 mb-6">
-                  <span className="px-3 py-1 bg-purple-100 text-purple-600 text-sm font-medium rounded-full">
-                    {project.category}
-                  </span>
-                  {project.tags.map((tag) => (
-                    <span key={tag} className="px-3 py-1 bg-gray-100 text-gray-600 text-sm rounded-full">
-                      #{tag}
-                    </span>
-                  ))}
+                {/* Action Buttons */}
+                <div className="mt-4 md:mt-0">
+                  <InteractionBar 
+                    projectId={project.id}
+                    onCommentClick={() => setShowComments(true)}
+                    size="large"
+                  />
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex items-center space-x-4">
-                <button
-                  onClick={handleLike}
-                  className={`flex items-center px-4 py-2 rounded-lg font-medium transition-all ${
-                    liked 
-                      ? 'bg-red-100 text-red-600' 
-                      : 'bg-gray-100 text-gray-600 hover:bg-red-100 hover:text-red-600'
-                  }`}
-                >
-                  <Heart className={`w-4 h-4 mr-2 ${liked ? 'fill-current' : ''}`} />
-                  {project.likes + (liked ? 1 : 0)}
-                </button>
-                <button
-                  onClick={handleShare}
-                  className="flex items-center px-4 py-2 bg-gray-100 text-gray-600 hover:bg-purple-100 hover:text-purple-600 rounded-lg font-medium transition-all"
-                >
-                  <Share2 className="w-4 h-4 mr-2" />
-                  Share
-                </button>
+              {/* Project Description */}
+              <div className="prose max-w-none mb-8">
+                <p className="text-gray-700 text-lg leading-relaxed">{project.description}</p>
               </div>
-            </div>
 
-            {/* Project Description */}
-            <div className="prose max-w-none mb-8">
-              <p className="text-gray-700 text-lg leading-relaxed">{project.description}</p>
-            </div>
-
-            {/* Stats */}
-            <div className="flex items-center space-x-8 text-gray-600 border-t border-gray-200 pt-6">
-              <div className="flex items-center">
-                <Eye className="w-5 h-5 mr-2" />
-                <span>{project.views} views</span>
-              </div>
-              <div className="flex items-center">
-                <Heart className="w-5 h-5 mr-2" />
-                <span>{project.likes} likes</span>
-              </div>
-              <div className="flex items-center">
-                <MessageCircle className="w-5 h-5 mr-2" />
-                <span>{project.comments} comments</span>
-              </div>
-              <div className="text-sm">
-                Published {new Date(project.createdAt).toLocaleDateString()}
+              {/* Stats */}
+              <div className="border-t border-gray-200 pt-6">
+                <div className="text-sm text-gray-600">
+                  Published {new Date(project.createdAt).toLocaleDateString()}
+                </div>
               </div>
             </div>
           </div>
+
+          {/* Additional Images */}
+          {project.images.length > 1 && (
+            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+              {project.images.slice(1).map((image, index) => (
+                <div key={index} className="bg-white rounded-xl shadow-lg overflow-hidden">
+                  <img 
+                    src={image} 
+                    alt={`${project.title} - Image ${index + 2}`}
+                    className="w-full h-64 object-cover"
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-
-        {/* Additional Images */}
-        {project.images.length > 1 && (
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-            {project.images.slice(1).map((image, index) => (
-              <div key={index} className="bg-white rounded-xl shadow-lg overflow-hidden">
-                <img 
-                  src={image} 
-                  alt={`${project.title} - Image ${index + 2}`}
-                  className="w-full h-64 object-cover"
-                />
-              </div>
-            ))}
-          </div>
-        )}
       </div>
-    </div>
+
+      <CommentSection
+        projectId={project.id}
+        isOpen={showComments}
+        onClose={() => setShowComments(false)}
+      />
+    </>
   );
 };
 
