@@ -45,7 +45,7 @@ export const supabaseApi = {
       .from('projects')
       .select(`
         *,
-        profiles:user_id (
+        profiles!projects_user_id_fkey (
           name,
           username,
           avatar_url
@@ -78,7 +78,7 @@ export const supabaseApi = {
       .from('projects')
       .select(`
         *,
-        profiles:user_id (
+        profiles!projects_user_id_fkey (
           name,
           username,
           avatar_url
@@ -102,7 +102,7 @@ export const supabaseApi = {
       .from('projects')
       .select(`
         *,
-        profiles:user_id (
+        profiles!projects_user_id_fkey (
           name,
           username,
           avatar_url
@@ -189,12 +189,20 @@ export const supabaseApi = {
   },
 
   async incrementViews(projectId: string) {
-    const { error } = await supabase
+    const { data: currentProject } = await supabase
       .from('projects')
-      .update({ views_count: supabase.raw('views_count + 1') })
-      .eq('id', projectId);
+      .select('views_count')
+      .eq('id', projectId)
+      .single();
 
-    if (error) throw error;
+    if (currentProject) {
+      const { error } = await supabase
+        .from('projects')
+        .update({ views_count: (currentProject.views_count || 0) + 1 })
+        .eq('id', projectId);
+
+      if (error) throw error;
+    }
   },
 
   // Comments
@@ -203,7 +211,7 @@ export const supabaseApi = {
       .from('project_comments')
       .select(`
         *,
-        profiles:user_id (
+        profiles!project_comments_user_id_fkey (
           name,
           avatar_url
         )
@@ -233,7 +241,7 @@ export const supabaseApi = {
       })
       .select(`
         *,
-        profiles:user_id (
+        profiles!project_comments_user_id_fkey (
           name,
           avatar_url
         )

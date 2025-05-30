@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { User, Send, MoreVertical, MessageCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -20,7 +19,7 @@ interface CommentSectionProps {
 }
 
 const CommentSection: React.FC<CommentSectionProps> = ({ projectId, isOpen, onClose }) => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(false);
@@ -71,8 +70,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({ projectId, isOpen, onCl
 
     const comment: Comment = {
       id: Date.now().toString(),
-      author: user.name,
-      authorAvatar: user.avatar,
+      author: profile?.name || user.email || 'Unknown',
+      authorAvatar: profile?.avatar_url,
       content: newComment.trim(),
       createdAt: new Date().toISOString(),
       likes: 0,
@@ -182,10 +181,10 @@ const CommentSection: React.FC<CommentSectionProps> = ({ projectId, isOpen, onCl
           {user ? (
             <form onSubmit={handleSubmitComment} className="flex space-x-3">
               <div className="flex-shrink-0">
-                {user.avatar ? (
+                {profile?.avatar_url ? (
                   <img 
-                    src={user.avatar} 
-                    alt={user.name}
+                    src={profile.avatar_url} 
+                    alt={profile.name}
                     className="w-10 h-10 rounded-full object-cover"
                   />
                 ) : (

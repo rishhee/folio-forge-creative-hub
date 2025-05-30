@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Project } from '../services/api';
+import { Project } from '../services/supabaseApi';
 import InteractionBar from './InteractionBar';
 import CommentSection from './CommentSection';
 import { useInteractions } from '../hooks/useInteractions';
@@ -62,11 +62,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
             <span className="px-2 py-1 bg-purple-100 text-purple-600 text-xs font-medium rounded-full">
               {project.category}
             </span>
-            {project.featured && (
-              <span className="px-2 py-1 bg-yellow-100 text-yellow-600 text-xs font-medium rounded-full">
-                Featured
-              </span>
-            )}
           </div>
           
           <InteractionBar 
