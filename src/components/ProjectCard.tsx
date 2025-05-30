@@ -23,8 +23,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleCommentClick = (e: React.MouseEvent) => {
-    e.preventDefault();
+  const handleCommentClick = () => {
     setShowComments(true);
   };
 

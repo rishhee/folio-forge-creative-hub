@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { User, Send, MoreVertical } from 'lucide-react';
+import { User, Send, MoreVertical, MessageCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 interface Comment {
