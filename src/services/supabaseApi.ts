@@ -45,7 +45,7 @@ export const supabaseApi = {
       .from('projects')
       .select(`
         *,
-        profiles!projects_user_id_fkey (
+        profiles (
           name,
           username,
           avatar_url
@@ -78,7 +78,7 @@ export const supabaseApi = {
       .from('projects')
       .select(`
         *,
-        profiles!projects_user_id_fkey (
+        profiles (
           name,
           username,
           avatar_url
@@ -102,7 +102,7 @@ export const supabaseApi = {
       .from('projects')
       .select(`
         *,
-        profiles!projects_user_id_fkey (
+        profiles (
           name,
           username,
           avatar_url
@@ -211,7 +211,7 @@ export const supabaseApi = {
       .from('project_comments')
       .select(`
         *,
-        profiles!project_comments_user_id_fkey (
+        profiles (
           name,
           avatar_url
         )
@@ -241,7 +241,7 @@ export const supabaseApi = {
       })
       .select(`
         *,
-        profiles!project_comments_user_id_fkey (
+        profiles (
           name,
           avatar_url
         )

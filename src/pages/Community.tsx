@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { MessageCircle, Trophy, Users, Plus, Search, Filter, Heart, Eye, TrendingUp, Calendar } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -32,7 +31,7 @@ interface Challenge {
 }
 
 const Community = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [activeTab, setActiveTab] = useState<'discussions' | 'challenges' | 'network'>('discussions');
   const [discussions, setDiscussions] = useState<Discussion[]>([]);
   const [challenges, setChallenges] = useState<Challenge[]>([]);
@@ -53,8 +52,8 @@ const Community = () => {
         id: '1',
         title: 'Best practices for mobile-first design',
         content: 'What are your thoughts on designing mobile-first vs desktop-first? I\'ve been experimenting with different approaches...',
-        author: 'Sarah Chen',
-        authorAvatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=40&h=40&fit=crop&crop=face',
+        author: profile?.name || user.email || 'Unknown',
+        authorAvatar: profile?.avatar_url,
         category: 'question',
         likes: 24,
         replies: 12,
@@ -66,8 +65,8 @@ const Community = () => {
         id: '2',
         title: 'Just launched my new portfolio website!',
         content: 'After months of work, I finally launched my new portfolio. Would love to get some feedback from the community...',
-        author: 'Marcus Johnson',
-        authorAvatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face',
+        author: profile?.name || user.email || 'Unknown',
+        authorAvatar: profile?.avatar_url,
         category: 'showcase',
         likes: 18,
         replies: 8,
@@ -79,7 +78,7 @@ const Community = () => {
         id: '3',
         title: 'Color theory for UI designers',
         content: 'Sharing some insights about color psychology in digital design. Colors can dramatically impact user behavior...',
-        author: 'Alex Rivera',
+        author: profile?.name || user.email || 'Unknown',
         category: 'general',
         likes: 31,
         replies: 15,
@@ -138,8 +137,8 @@ const Community = () => {
       id: Date.now().toString(),
       title: newPostTitle.trim(),
       content: newPost.trim(),
-      author: user.name,
-      authorAvatar: user.avatar,
+      author: profile?.name || user.email || 'Unknown',
+      authorAvatar: profile?.avatar_url,
       category: selectedCategory,
       likes: 0,
       replies: 0,
