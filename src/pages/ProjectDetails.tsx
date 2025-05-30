@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import { mockAPI, Project } from '../services/api';
+import { supabaseApi, Project } from '../services/supabaseApi';
 import { useAuth } from '../contexts/AuthContext';
 import InteractionBar from '../components/InteractionBar';
 import CommentSection from '../components/CommentSection';
@@ -38,7 +37,7 @@ const ProjectDetails = () => {
   const loadProject = async (projectId: string) => {
     setLoading(true);
     try {
-      const data = await mockAPI.getProject(projectId);
+      const data = await supabaseApi.getProject(projectId);
       setProject(data);
     } catch (error) {
       console.error('Failed to load project:', error);
@@ -183,7 +182,7 @@ const ProjectDetails = () => {
               {/* Stats */}
               <div className="border-t border-gray-200 pt-6">
                 <div className="text-sm text-gray-600">
-                  Published {new Date(project.createdAt).toLocaleDateString()}
+                  Published {new Date(project.created_at).toLocaleDateString()}
                 </div>
               </div>
             </div>

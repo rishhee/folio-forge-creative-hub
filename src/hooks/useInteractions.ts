@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { supabaseApi } from '../services/supabaseApi';
 
 interface ProjectInteractions {
   likes: number;
@@ -22,37 +23,28 @@ export const useInteractions = (projectId: string) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadInteractions();
+    if (projectId) {
+      loadInteractions();
+    }
   }, [projectId, user]);
 
   const loadInteractions = async () => {
     setLoading(true);
     try {
-      // Simulate API call to get interactions
-      const response = await fetch(`/api/projects/${projectId}/interactions`);
-      if (response.ok) {
-        const data = await response.json();
-        setInteractions(data);
-      } else {
-        // Mock data for development
-        setInteractions({
-          likes: Math.floor(Math.random() * 100),
-          views: Math.floor(Math.random() * 500),
-          comments: Math.floor(Math.random() * 20),
-          userLiked: false,
-          userViewed: false,
-        });
-      }
-    } catch (error) {
-      console.error('Failed to load interactions:', error);
-      // Mock data fallback
+      const [project, userLike] = await Promise.all([
+        supabaseApi.getProject(projectId),
+        user ? supabaseApi.getProjectLike(projectId) : null,
+      ]);
+
       setInteractions({
-        likes: Math.floor(Math.random() * 100),
-        views: Math.floor(Math.random() * 500),
-        comments: Math.floor(Math.random() * 20),
-        userLiked: false,
+        likes: project.likes_count,
+        views: project.views_count,
+        comments: project.comments_count,
+        userLiked: !!userLike,
         userViewed: false,
       });
+    } catch (error) {
+      console.error('Failed to load interactions:', error);
     } finally {
       setLoading(false);
     }
@@ -75,22 +67,7 @@ export const useInteractions = (projectId: string) => {
     }));
 
     try {
-      const response = await fetch(`/api/projects/${projectId}/like`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ liked: newLiked }),
-      });
-
-      if (!response.ok) {
-        // Revert on error
-        setInteractions(prev => ({
-          ...prev,
-          userLiked: !newLiked,
-          likes: !newLiked ? prev.likes + 1 : prev.likes - 1,
-        }));
-      }
+      await supabaseApi.toggleLike(projectId);
     } catch (error) {
       console.error('Failed to toggle like:', error);
       // Revert on error
@@ -113,41 +90,29 @@ export const useInteractions = (projectId: string) => {
     }));
 
     try {
-      await fetch(`/api/projects/${projectId}/view`, {
-        method: 'POST',
-      });
+      await supabaseApi.incrementViews(projectId);
     } catch (error) {
       console.error('Failed to record view:', error);
     }
   };
 
-  const addComment = async (comment: string) => {
+  const addComment = async (content: string) => {
     if (!user) {
       alert('Please sign in to comment');
       return null;
     }
 
     try {
-      const response = await fetch(`/api/projects/${projectId}/comments`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ comment }),
-      });
-
-      if (response.ok) {
-        const newComment = await response.json();
-        setInteractions(prev => ({
-          ...prev,
-          comments: prev.comments + 1,
-        }));
-        return newComment;
-      }
+      const newComment = await supabaseApi.addComment(projectId, content);
+      setInteractions(prev => ({
+        ...prev,
+        comments: prev.comments + 1,
+      }));
+      return newComment;
     } catch (error) {
       console.error('Failed to add comment:', error);
+      return null;
     }
-    return null;
   };
 
   return {

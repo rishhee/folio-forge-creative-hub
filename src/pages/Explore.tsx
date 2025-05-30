@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { mockAPI, Project } from '../services/api';
+import { supabaseApi, Project } from '../services/supabaseApi';
 import ProjectCard from '../components/ProjectCard';
 
 const Explore = () => {
@@ -20,7 +19,7 @@ const Explore = () => {
   const loadProjects = async () => {
     setLoading(true);
     try {
-      const data = await mockAPI.getProjects({ 
+      const data = await supabaseApi.getProjects({ 
         category: selectedCategory === 'All' ? undefined : selectedCategory 
       });
       setProjects(data);

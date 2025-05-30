@@ -2,19 +2,18 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, TrendingUp, Eye, Heart, Users } from 'lucide-react';
-import { mockAPI, Project } from '../services/api';
+import { supabaseApi, Project, DashboardStats } from '../services/supabaseApi';
 import { useAuth } from '../contexts/AuthContext';
 import ProjectCard from '../components/ProjectCard';
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<DashboardStats>({
     totalProjects: 0,
     totalViews: 0,
     totalLikes: 0,
     totalFollowers: 0,
-    recentActivity: []
   });
   const [loading, setLoading] = useState(true);
 
@@ -30,8 +29,8 @@ const Dashboard = () => {
     setLoading(true);
     try {
       const [userProjects, dashboardStats] = await Promise.all([
-        mockAPI.getUserProjects(user.id),
-        mockAPI.getDashboardStats(user.id)
+        supabaseApi.getUserProjects(user.id),
+        supabaseApi.getDashboardStats(user.id)
       ]);
       
       setProjects(userProjects);
@@ -69,7 +68,7 @@ const Dashboard = () => {
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Welcome back, {user.name}!
+              Welcome back, {profile?.name || user.email}!
             </h1>
             <p className="text-gray-600">Manage your portfolios and track your progress</p>
           </div>

@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Upload, X, Plus } from 'lucide-react';
-import { mockAPI } from '../services/api';
+import { supabaseApi } from '../services/supabaseApi';
 import { useAuth } from '../contexts/AuthContext';
 
 const CreatePortfolio = () => {
@@ -36,7 +35,7 @@ const CreatePortfolio = () => {
 
     setLoading(true);
     try {
-      const project = await mockAPI.createProject(formData);
+      const project = await supabaseApi.createProject(formData);
       navigate(`/projects/${project.id}`);
     } catch (error) {
       console.error('Failed to create project:', error);
