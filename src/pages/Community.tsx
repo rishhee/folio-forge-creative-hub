@@ -31,7 +31,7 @@ interface Challenge {
 }
 
 const Community = () => {
-  const { user, profile } = useAuth();
+  const { user, profile, loading } = useAuth();
   const [activeTab, setActiveTab] = useState<'discussions' | 'challenges' | 'network'>('discussions');
   const [discussions, setDiscussions] = useState<Discussion[]>([]);
   const [challenges, setChallenges] = useState<Challenge[]>([]);
@@ -42,18 +42,31 @@ const Community = () => {
   const [filterBy, setFilterBy] = useState<'trending' | 'recent' | 'popular'>('trending');
 
   useEffect(() => {
-    loadCommunityData();
-  }, []);
+    // Only load community data when auth loading is complete
+    if (!loading) {
+      loadCommunityData();
+    }
+  }, [loading, user, profile]);
 
   const loadCommunityData = () => {
+    // Get user display name safely
+    const getUserDisplayName = () => {
+      if (profile?.name) return profile.name;
+      if (user?.email) return user.email;
+      return 'Anonymous User';
+    };
+
+    const userDisplayName = getUserDisplayName();
+    const userAvatar = profile?.avatar_url;
+
     // Mock discussions data
     const mockDiscussions: Discussion[] = [
       {
         id: '1',
         title: 'Best practices for mobile-first design',
         content: 'What are your thoughts on designing mobile-first vs desktop-first? I\'ve been experimenting with different approaches...',
-        author: profile?.name || user.email || 'Unknown',
-        authorAvatar: profile?.avatar_url,
+        author: userDisplayName,
+        authorAvatar: userAvatar,
         category: 'question',
         likes: 24,
         replies: 12,
@@ -65,8 +78,8 @@ const Community = () => {
         id: '2',
         title: 'Just launched my new portfolio website!',
         content: 'After months of work, I finally launched my new portfolio. Would love to get some feedback from the community...',
-        author: profile?.name || user.email || 'Unknown',
-        authorAvatar: profile?.avatar_url,
+        author: userDisplayName,
+        authorAvatar: userAvatar,
         category: 'showcase',
         likes: 18,
         replies: 8,
@@ -78,7 +91,7 @@ const Community = () => {
         id: '3',
         title: 'Color theory for UI designers',
         content: 'Sharing some insights about color psychology in digital design. Colors can dramatically impact user behavior...',
-        author: profile?.name || user.email || 'Unknown',
+        author: userDisplayName,
         category: 'general',
         likes: 31,
         replies: 15,
@@ -133,11 +146,17 @@ const Community = () => {
     }
     if (!newPostTitle.trim() || !newPost.trim()) return;
 
+    const getUserDisplayName = () => {
+      if (profile?.name) return profile.name;
+      if (user?.email) return user.email;
+      return 'Anonymous User';
+    };
+
     const newDiscussion: Discussion = {
       id: Date.now().toString(),
       title: newPostTitle.trim(),
       content: newPost.trim(),
-      author: profile?.name || user.email || 'Unknown',
+      author: getUserDisplayName(),
       authorAvatar: profile?.avatar_url,
       category: selectedCategory,
       likes: 0,
@@ -191,6 +210,21 @@ const Community = () => {
       if (filterBy === 'popular') return b.likes - a.likes;
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
+
+  // Show loading state while auth is loading
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 py-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-4">
+              Loading Community...
+            </h1>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 py-8">
